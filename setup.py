@@ -49,7 +49,7 @@ setup(
     url='https://github.com/hellysmile/django-mongo-sessions',
     zip_safe=False,
     install_requires=[
-        'django >= 1.4',
+        'django >= 1.6',
         'pymongo >= 2.4.2'
     ],
     license='http://www.apache.org/licenses/LICENSE-2.0',

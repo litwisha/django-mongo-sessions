@@ -1,6 +1,11 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.module_loading import import_string
+
+try:
+    from django.utils.module_loading import import_string
+except ImportError:
+    # Django  1.5 <= version <= 1.6
+    from django.utils.module_loading import import_by_path as import_string
 
 MONGO_CLIENT = getattr(settings, 'MONGO_CLIENT', False)
 
@@ -40,7 +45,7 @@ elif isinstance(MONGO_CLIENT, str):
 
     if not MONGO_CLIENT:
         raise ImproperlyConfigured(
-            'Incorrect MONGO_CLIENT string'
+            'Incorrect MONGO_CLIENT string',
         )
 
 try:

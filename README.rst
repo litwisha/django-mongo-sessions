@@ -45,6 +45,15 @@ second, if you need to connect to mongodb, like::
     MONGO_SESSIONS_COLLECTION = 'mongo_sessions'
 
     # all this settings are defaults, you can skip any
+    
+Also, ``MONGO_CLIENT`` can be a string - dotted path to mongo connection with database name::
+
+    MONGO_CLIENT = 'project.storage.connection.db_name'
+
+Where 
+``project.storage`` - module containing a mongo connection instance,
+``connection`` - mongo connection instance,
+``db_name`` - name of mongo database.
 
 ``expireAfterSeconds`` index value by default is ``SESSION_COOKIE_AGE``
 you can change::
