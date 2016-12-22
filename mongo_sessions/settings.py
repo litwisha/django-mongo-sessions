@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-
+from django.utils.module_loading import import_string
 
 MONGO_CLIENT = getattr(settings, 'MONGO_CLIENT', False)
 
@@ -32,6 +32,16 @@ if not MONGO_CLIENT:
 
     if MONGO_DB_USER and MONGO_DB_PASSWORD:
         MONGO_CLIENT.authenticate(MONGO_DB_USER, MONGO_DB_PASSWORD)
+
+elif isinstance(MONGO_CLIENT, str):
+    connection, db = MONGO_CLIENT.rsplit('.', 1)
+    connection = import_string(connection)
+    MONGO_CLIENT = getattr(connection, db, False)
+
+    if not MONGO_CLIENT:
+        raise ImproperlyConfigured(
+            'Incorrect MONGO_CLIENT string'
+        )
 
 try:
     MONGO_DB_VERSION = MONGO_CLIENT.connection.server_info()['version']
