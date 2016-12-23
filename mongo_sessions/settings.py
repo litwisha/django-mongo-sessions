@@ -1,3 +1,4 @@
+import six
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
@@ -7,7 +8,7 @@ except ImportError:
     # Django  1.5 <= version <= 1.6
     from django.utils.module_loading import import_by_path as import_string
 
-MONGO_CLIENT = getattr(settings, 'MONGO_CLIENT', False)
+MONGO_DB = getattr(settings, 'MONGO_DB', False)
 
 MONGO_SESSIONS_COLLECTION = getattr(
     settings, 'MONGO_SESSIONS_COLLECTION', 'mongo_sessions'
@@ -19,7 +20,7 @@ MONGO_SESSIONS_TTL = getattr(
     settings, 'MONGO_SESSIONS_TTL', settings.SESSION_COOKIE_AGE
 )
 
-if not MONGO_CLIENT:
+if not MONGO_DB:
     MONGO_PORT = int(getattr(settings, 'MONGO_PORT', 27017))
     MONGO_HOST = getattr(settings, 'MONGO_HOST', 'localhost')
     MONGO_DB_NAME = getattr(settings, 'MONGO_DB_NAME', 'test')
@@ -28,31 +29,24 @@ if not MONGO_CLIENT:
 
     from pymongo import MongoClient
 
-    MONGO_CLIENT = MongoClient(
+    _mongo_client = MongoClient(
         host=MONGO_HOST,
         port=MONGO_PORT,
     )
 
-    MONGO_CLIENT = MONGO_CLIENT[MONGO_DB_NAME]
+    MONGO_DB = _mongo_client[MONGO_DB_NAME]
 
     if MONGO_DB_USER and MONGO_DB_PASSWORD:
-        MONGO_CLIENT.authenticate(MONGO_DB_USER, MONGO_DB_PASSWORD)
+        MONGO_DB.authenticate(MONGO_DB_USER, MONGO_DB_PASSWORD)
 
-elif isinstance(MONGO_CLIENT, str):
-    connection, db = MONGO_CLIENT.rsplit('.', 1)
-    connection = import_string(connection)
-    MONGO_CLIENT = getattr(connection, db, False)
-
-    if not MONGO_CLIENT:
-        raise ImproperlyConfigured(
-            'Incorrect MONGO_CLIENT string',
-        )
+elif isinstance(MONGO_DB, six.string_types):
+    MONGO_DB = import_string(MONGO_DB)
 
 try:
-    MONGO_DB_VERSION = MONGO_CLIENT.connection.server_info()['version']
+    MONGO_DB_VERSION = MONGO_DB.connection.server_info()['version']
 except TypeError:
     # for pymongo >= 3
-    MONGO_DB_VERSION = MONGO_CLIENT.client.server_info()['version']
+    MONGO_DB_VERSION = MONGO_DB.client.server_info()['version']
 
 if not float('.'.join(MONGO_DB_VERSION.split('.')[:-1])) >= 2.2:
     raise ImproperlyConfigured(
@@ -62,7 +56,7 @@ if not float('.'.join(MONGO_DB_VERSION.split('.')[:-1])) >= 2.2:
         '''
     )
 
-DB_COLLECTION = MONGO_CLIENT[MONGO_SESSIONS_COLLECTION]
+DB_COLLECTION = MONGO_DB[MONGO_SESSIONS_COLLECTION]
 
 MONGO_SESSIONS_INDEXES = DB_COLLECTION.index_information()
 
