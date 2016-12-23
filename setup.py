@@ -50,7 +50,8 @@ setup(
     zip_safe=False,
     install_requires=[
         'django >= 1.6',
-        'pymongo >= 2.4.2'
+        'pymongo >= 2.4.2',
+        'six >= 1.0.0',
     ],
     license='http://www.apache.org/licenses/LICENSE-2.0',
     classifiers=filter(None, classifiers.split('\n')),
