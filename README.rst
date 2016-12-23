@@ -32,10 +32,14 @@ first, if already have mongo connection, like::
     import pymongo
     from pymongo import MongoClient
     connection = MongoClient()
-    MONGO_DB = connection.your_database
+    MONGO_CLIENT = connection.your_database
     MONGO_SESSIONS_COLLECTION = 'mongo_sessions' # default option
 
-second, if you need to connect to mongodb, like::
+second, if already have mongo db instance, like::
+
+    MONGO_DB = 'project.storage.db'  # dotted path mongo database instance
+
+third, if you need to connect to mongodb, like::
 
     MONGO_PORT = 27017
     MONGO_HOST = 'localhost'
@@ -45,14 +49,6 @@ second, if you need to connect to mongodb, like::
     MONGO_SESSIONS_COLLECTION = 'mongo_sessions'
 
     # all this settings are defaults, you can skip any
-    
-Also, ``MONGO_DB`` can be a string - dotted path to mongo connection with database name::
-
-    MONGO_DB = 'project.storage.db'
-
-Where 
-``project.storage`` - module containing a mongo db instance,
-``db`` - mongo db instance.
 
 ``expireAfterSeconds`` index value by default is ``SESSION_COOKIE_AGE``
 you can change::
