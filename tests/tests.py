@@ -1,4 +1,13 @@
 # tests stolen from https://github.com/martinrusev/django-redis-sessions
+import time
+from imp import reload
+
+from django.conf import settings
+from django.test.utils import override_settings
+
+from mongo_sessions import settings as mongo_session_settings
+from nose.tools import assert_raises, eq_
+
 try:
     # For Django versions < 1.9
     from django.utils.importlib import import_module
@@ -6,12 +15,20 @@ except ImportError:
     # For Django versions >= 1.9
     from django.utils.module_loading import import_module
 
-from django.conf import settings
-import time
-from nose.tools import eq_
-
-
 session_engine = import_module(settings.SESSION_ENGINE).SessionStore()
+
+incorrect_db = object()
+
+
+def test_incorrect_mongo_db_string():
+    def _test_connection(conn, exc):
+        with override_settings(MONGO_DB=conn):
+            with assert_raises(exc):
+                reload(mongo_session_settings)
+
+    _test_connection('wrong.conn.string', ImportError)
+
+    _test_connection('tests.tests.incorrect_db', AttributeError)
 
 
 def test_modify_and_keys():
