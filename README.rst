@@ -39,6 +39,9 @@ second, if already have mongo db instance, like::
 
     MONGO_DB = 'project.storage.db'  # dotted path mongo database instance
 
+
+Note: Provide only one of: ``MONGO_DB`` or ``MONGO_CLIENT`` setting.
+
 third, if you need to connect to mongodb, like::
 
     MONGO_PORT = 27017

@@ -22,6 +22,14 @@ MONGO_SESSIONS_TTL = getattr(
     settings, 'MONGO_SESSIONS_TTL', settings.SESSION_COOKIE_AGE
 )
 
+if MONGO_DB and MONGO_CLIENT:
+    raise ImproperlyConfigured(
+        '''
+        Ambigious mongo configuration
+        Provide only one of the following settings: MONGO_DB or MONGO_CLIENT
+        '''
+    )
+
 if MONGO_DB:
     if isinstance(MONGO_DB, six.string_types):
         MONGO_CLIENT = import_string(MONGO_DB)

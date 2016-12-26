@@ -3,6 +3,7 @@ import time
 from imp import reload
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.test.utils import override_settings
 
 from mongo_sessions import settings as mongo_session_settings
@@ -21,14 +22,31 @@ incorrect_db = object()
 
 
 def test_incorrect_mongo_db_string():
-    def _test_connection(conn, exc):
-        with override_settings(MONGO_DB=conn):
+    def _test_connection(settings, exc):
+        with override_settings(**settings):
             with assert_raises(exc):
                 reload(mongo_session_settings)
 
-    _test_connection('wrong.conn.string', ImportError)
+    # test non-existent mongoDB instance
+    settings = {
+        'MONGO_DB': 'wrong.conn.string',
+    }
+    _test_connection(settings, ImportError)
 
-    _test_connection('tests.tests.incorrect_db', AttributeError)
+    # test invalid mongoDB instance
+    settings = {
+        'MONGO_DB': 'tests.tests.incorrect_db',
+    }
+    _test_connection(settings, AttributeError)
+
+    # test ambigious mongo settings
+    settings = {
+        'MONGO_DB': 'tests.tests.incorrect_db',
+        'MONGO_CLIENT': 'tests.tests.incorrect_db',
+    }
+
+    _test_connection(settings, ImproperlyConfigured)
+
 
 
 def test_modify_and_keys():
