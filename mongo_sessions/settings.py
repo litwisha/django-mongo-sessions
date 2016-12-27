@@ -1,6 +1,8 @@
-import six
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.utils import six
+from pymongo import MongoClient
+from pymongo.database import Database
 
 try:
     from django.utils.module_loading import import_string
@@ -10,7 +12,7 @@ except ImportError:
 
 MONGO_CLIENT = getattr(settings, 'MONGO_CLIENT', False)
 
-MONGO_DB = getattr(settings, 'MONGO_DB', False)
+MONGO_DB_NAME = getattr(settings, 'MONGO_DB_NAME', 'test')
 
 MONGO_SESSIONS_COLLECTION = getattr(
     settings, 'MONGO_SESSIONS_COLLECTION', 'mongo_sessions'
@@ -22,44 +24,44 @@ MONGO_SESSIONS_TTL = getattr(
     settings, 'MONGO_SESSIONS_TTL', settings.SESSION_COOKIE_AGE
 )
 
-if MONGO_DB and MONGO_CLIENT:
-    raise ImproperlyConfigured(
-        '''
-        Ambigious mongo configuration
-        Provide only one of the following settings: MONGO_DB or MONGO_CLIENT
-        '''
-    )
+if MONGO_CLIENT:
+    if isinstance(MONGO_CLIENT, six.string_types):
+        MONGO_CLIENT = import_string(MONGO_CLIENT)
 
-if MONGO_DB:
-    if isinstance(MONGO_DB, six.string_types):
-        MONGO_CLIENT = import_string(MONGO_DB)
+    if isinstance(MONGO_CLIENT, MongoClient):
+        MONGO_DB = MONGO_CLIENT[MONGO_DB_NAME]
+
+    elif isinstance(MONGO_CLIENT, Database):
+        MONGO_DB = MONGO_CLIENT
+
     else:
-        MONGO_CLIENT = MONGO_DB
-
-if not MONGO_CLIENT:
+        raise ImproperlyConfigured(
+            '''
+            Incorrect MONGO_CLIENT settings.
+            Must be MongoClient or Database instance
+            '''
+        )
+else:
     MONGO_PORT = int(getattr(settings, 'MONGO_PORT', 27017))
     MONGO_HOST = getattr(settings, 'MONGO_HOST', 'localhost')
-    MONGO_DB_NAME = getattr(settings, 'MONGO_DB_NAME', 'test')
     MONGO_DB_USER = getattr(settings, 'MONGO_DB_USER', False)
     MONGO_DB_PASSWORD = getattr(settings, 'MONGO_DB_PASSWORD', False)
-
-    from pymongo import MongoClient
 
     MONGO_CLIENT = MongoClient(
         host=MONGO_HOST,
         port=MONGO_PORT,
     )
 
-    MONGO_CLIENT = MONGO_CLIENT[MONGO_DB_NAME]
+    MONGO_DB = MONGO_CLIENT[MONGO_DB_NAME]
 
     if MONGO_DB_USER and MONGO_DB_PASSWORD:
-        MONGO_CLIENT.authenticate(MONGO_DB_USER, MONGO_DB_PASSWORD)
+        MONGO_DB.authenticate(MONGO_DB_USER, MONGO_DB_PASSWORD)
 
 try:
-    MONGO_DB_VERSION = MONGO_CLIENT.connection.server_info()['version']
+    MONGO_DB_VERSION = MONGO_DB.connection.server_info()['version']
 except TypeError:
     # for pymongo >= 3
-    MONGO_DB_VERSION = MONGO_CLIENT.client.server_info()['version']
+    MONGO_DB_VERSION = MONGO_DB.client.server_info()['version']
 
 if not float('.'.join(MONGO_DB_VERSION.split('.')[:-1])) >= 2.2:
     raise ImproperlyConfigured(
@@ -69,7 +71,7 @@ if not float('.'.join(MONGO_DB_VERSION.split('.')[:-1])) >= 2.2:
         '''
     )
 
-DB_COLLECTION = MONGO_CLIENT[MONGO_SESSIONS_COLLECTION]
+DB_COLLECTION = MONGO_DB[MONGO_SESSIONS_COLLECTION]
 
 MONGO_SESSIONS_INDEXES = DB_COLLECTION.index_information()
 
