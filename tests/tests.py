@@ -21,7 +21,7 @@ session_engine = import_module(settings.SESSION_ENGINE).SessionStore()
 incorrect_db = object()
 
 
-def test_incorrect_mongo_db_string():
+def test_incorrect_mongo_client_setting():
     def _test_connection(settings, exc):
         with override_settings(**settings):
             with assert_raises(exc):
@@ -29,24 +29,21 @@ def test_incorrect_mongo_db_string():
 
     # test non-existent mongoDB instance
     settings = {
-        'MONGO_DB': 'wrong.conn.string',
+        'MONGO_CLIENT': 'wrong.conn.string',
     }
     _test_connection(settings, ImportError)
 
     # test invalid mongoDB instance
     settings = {
-        'MONGO_DB': 'tests.tests.incorrect_db',
+        'MONGO_CLIENT': object(),
     }
-    _test_connection(settings, AttributeError)
-
-    # test ambigious mongo settings
-    settings = {
-        'MONGO_DB': 'tests.tests.incorrect_db',
-        'MONGO_CLIENT': 'tests.tests.incorrect_db',
-    }
-
     _test_connection(settings, ImproperlyConfigured)
 
+    # test invalid mongoDB instance as str
+    settings = {
+        'MONGO_CLIENT': 'tests.tests.incorrect_db',
+    }
+    _test_connection(settings, ImproperlyConfigured)
 
 
 def test_modify_and_keys():

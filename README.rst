@@ -4,7 +4,7 @@ django-mongo-sessions
 :info: mongodb as Django sessions backend
 
 .. image:: https://api.travis-ci.org/hellysmile/django-mongo-sessions.png
-    :target: https://travis-ci.org/hellysmile/django-mongo-sessions
+:target: https://travis-ci.org/hellysmile/django-mongo-sessions
 
 features
 ********
@@ -24,10 +24,10 @@ set ``mongo_sessions.session`` as session engine::
 settings
 --------
 
-there is two ways to setup mongodb connection at ``settings.py``
+there are two ways to setup mongodb connection at ``settings.py``
 
 
-first, if already have mongo connection, like::
+first, if already have mongo connection as ``pymongo.database.Database`` instance::
 
     import pymongo
     from pymongo import MongoClient
@@ -35,14 +35,27 @@ first, if already have mongo connection, like::
     MONGO_CLIENT = connection.your_database
     MONGO_SESSIONS_COLLECTION = 'mongo_sessions' # default option
 
-second, if already have mongo db instance, like::
+or as ``pymongo.MongoClient`` instance::
 
-    MONGO_DB = 'project.storage.db'  # dotted path mongo database instance
+    import pymongo
+    from pymongo import MongoClient
+    connection = MongoClient()
+    MONGO_CLIENT = connection
+    MONGO_DB_NAME = 'test'  # default option
+    MONGO_SESSIONS_COLLECTION = 'mongo_sessions' # default option
 
 
-Note: Provide only one of: ``MONGO_DB`` or ``MONGO_CLIENT`` setting.
 
-third, if you need to connect to mongodb, like::
+Also, ``MONGO_CLIENT`` setting can be a dotted path string to ``pymongo.MongoClient`` or ``pymongo.database.Database`` instances::
+
+    MONGO_CLIENT = 'project.main.client'  # MongoClient instance
+    MONGO_DB_NAME = 'test'  # default option
+
+or::
+
+    MONGO_CLIENT = 'project.main.db'  # pymongo.database.Database instance
+
+second, if you need to connect to mongodb, like::
 
     MONGO_PORT = 27017
     MONGO_HOST = 'localhost'
