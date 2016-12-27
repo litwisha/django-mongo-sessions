@@ -4,7 +4,7 @@ django-mongo-sessions
 :info: mongodb as Django sessions backend
 
 .. image:: https://api.travis-ci.org/hellysmile/django-mongo-sessions.png
-:target: https://travis-ci.org/hellysmile/django-mongo-sessions
+    :target: https://travis-ci.org/hellysmile/django-mongo-sessions
 
 features
 ********
