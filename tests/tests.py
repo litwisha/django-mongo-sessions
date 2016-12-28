@@ -24,14 +24,15 @@ incorrect_db = object()
 def test_incorrect_mongo_client_setting():
     def _test_connection(settings, exc):
         with override_settings(**settings):
-            with assert_raises(exc):
-                reload(mongo_session_settings)
+            # because older versions has no support as contextmanager
+            assert_raises(exc, reload, mongo_session_settings)
 
     # test non-existent mongoDB instance
     settings = {
         'MONGO_CLIENT': 'wrong.conn.string',
     }
-    _test_connection(settings, ImportError)
+    # different exceptions in different django versions
+    _test_connection(settings, (ImportError, ImproperlyConfigured))
 
     # test invalid mongoDB instance
     settings = {
